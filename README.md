@@ -108,3 +108,18 @@ At this point you have all the configuration needed to setup the addon. You'll n
 environment variables. The process for doing so changes depending on how you are running the addon.
 
 You'll have to restart the addon container with the new configuration to reinitialize the WMS stick using the correct parameters. 
+
+
+## Local development
+
+Install Node.js on Raspberry Pi Zero 2 W:
+
+```
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
+
+Restart terminal and install Node 18:
+
+```
+nvm install 18
+```

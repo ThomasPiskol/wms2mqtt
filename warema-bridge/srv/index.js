@@ -1,6 +1,7 @@
 const warema = require('./warema-wms-venetian-blinds');
 const log = require('./logger');
 const mqtt = require('mqtt');
+const { registerDevice } = require('./registerDevice');
 
 process.on('SIGINT', function () {
     process.exit(0);
@@ -21,208 +22,8 @@ const settingsPar = {
 
 const devices = [];
 
-function registerDevice(element) {
-    log.debug('Registering ' + element.snr + ' with type: ' + element.type)
-    var availability_topic = 'warema/' + element.snr + '/availability'
 
-    var base_payload = {
-        availability: [
-            {topic: 'warema/bridge/state'},
-            {topic: availability_topic}
-        ],
-        unique_id: element.snr,
-        name: null
-    }
-
-    var base_device = {
-        identifiers: element.snr,
-        manufacturer: "Warema",
-        name: element.snr
-    }
-
-    var model
-    var payload
-    switch (element.type) {
-		case "63":
-            model = 'Weather station pro'
-            payload = {
-                ...base_payload,
-                device: {
-                    ...base_device,
-                    model: model
-                }
-            }
-
-            const illuminance_payload = {
-                ...payload,
-                state_topic: 'warema/' + element.snr + '/illuminance/state',
-                device_class: 'illuminance',
-                unique_id: element.snr + '_illuminance',
-                object_id: element.snr + '_illuminance',
-                unit_of_measurement: 'lx',
-            };
-            
-            const temperature_payload = {
-                ...payload,
-                state_topic: 'warema/' + element.snr + '/temperature/state',
-                device_class: 'temperature',
-                unique_id: element.snr + '_temperature',
-                object_id: element.snr + '_temperature',
-                unit_of_measurement: '°C',
-            }
-            
-            const wind_payload = {
-                ...payload,
-                state_topic: 'warema/' + element.snr + '/wind/state',
-                device_class: 'wind_speed',
-                unique_id: element.snr + '_wind',
-                object_id: element.snr + '_wind',
-                unit_of_measurement: 'm/s',
-            }
-            
-            const rain_payload = {
-                ...payload,
-                state_topic: 'warema/' + element.snr + '/rain/state',
-                device_class: 'moisture',
-                unique_id: element.snr + '_rain',
-                object_id: element.snr + '_rain',
-            }
-            
-            client.publish(availability_topic, 'online', {retain: true})
-
-            devices[element.snr] = {};
-            log.info('No need to add to stick, weather updates are broadcasted. ' + element.snr + ' with type: ' + element.type) 
-
-            return;
-        case "07":
-            // WMS Remote pro
-            return;
-        case "09":
-            // WMS WebControl Pro - while part of the network, we have no business to do with it.
-            return;
-        case "20":
-            model = 'Plug receiver'
-            payload = {
-                ...base_payload,
-                device: {
-                    ...base_device,
-                    model: model
-                },
-                position_open: 0,
-                position_closed: 100,
-                command_topic: 'warema/' + element.snr + '/set',
-                state_topic: 'warema/' + element.snr + '/state',
-                position_topic: 'warema/' + element.snr + '/position',
-                tilt_status_topic: 'warema/' + element.snr + '/tilt',
-                set_position_topic: 'warema/' + element.snr + '/set_position',
-                tilt_command_topic: 'warema/' + element.snr + '/set_tilt',
-                tilt_closed_value: -100,
-                tilt_opened_value: 100,
-                tilt_min: -100,
-                tilt_max: 100,
-            }
-            break;
-        case "21":
-            model = 'Actuator UP'
-            payload = {
-                ...base_payload,
-                device: {
-                    ...base_device,
-                    model: model
-                },
-                position_open: 0,
-                position_closed: 100,
-                command_topic: 'warema/' + element.snr + '/set',
-                position_topic: 'warema/' + element.snr + '/position',
-                tilt_status_topic: 'warema/' + element.snr + '/tilt',
-                set_position_topic: 'warema/' + element.snr + '/set_position',
-                tilt_command_topic: 'warema/' + element.snr + '/set_tilt',
-                tilt_closed_value: -100,
-                tilt_opened_value: 100,
-                tilt_min: -100,
-                tilt_max: 100,
-            }
-
-            break;
-        case "24":
-            // TODO: Smart socket
-            model = 'Smart socket';
-            payload = {
-                ...base_payload,
-                device: {
-                    ...base_device,
-                    model: model
-                },
-                state_topic: 'warema/' + element.snr + '/state',
-                command_topic: 'warema/' + element.snr + '/set',
-            }
-
-            break;
-        case "25":
-            model = 'Vertical awning';
-            payload = {
-                ...base_payload,
-                device: {
-                    ...base_device,
-                    model: model
-                },
-                position_open: 0,
-                position_closed: 100,
-                command_topic: 'warema/' + element.snr + '/set',
-                position_topic: 'warema/' + element.snr + '/position',
-                set_position_topic: 'warema/' + element.snr + '/set_position',
-            }
-			break;
-		case "28":
-            model = 'LED';
-            payload = {
-                ...base_payload,
-                device: {
-                    ...base_device,
-                    model: model
-                },
-                position_open: 0,
-                position_closed: 100,
-                state_topic: 'warema/' + element.snr + '/state',
-                command_topic: 'warema/' + element.snr + '/set',
-                position_topic: 'warema/' + element.snr + '/position',
-                set_position_topic: 'warema/' + element.snr + '/set_position',
-			}
-			break;
-		case "2A":
-            model = 'Slat roof';
-            payload = {
-                ...base_payload,
-                device: {
-                    ...base_device,
-                    model: model
-                },
-                tilt_status_topic: 'warema/' + element.snr + '/tilt',
-                tilt_command_topic: 'warema/' + element.snr + '/set_tilt',
-				position_topic: 'warema/' + element.snr + '/position',
-                set_position_topic: 'warema/' + element.snr + '/set_position',
-            }
-			break;
-        default:
-            log.warn('Unrecognized device type: ' + element.type)
-            model = 'Unknown model ' + element.type
-            return
-    }
-
-    if (ignoredDevices.includes(element.snr.toString())) {
-        log.info('Ignoring and removing device ' + element.snr + ' (type ' + element.type + ')')
-    } else {
-        log.debug('Adding device ' + element.snr + ' (type ' + element.type + ')')
-
-        stickUsb.vnBlindAdd(parseInt(element.snr), element.snr.toString());
-
-        devices[element.snr] = {};
-
-        client.publish(availability_topic, 'online', {retain: true})
-    }
-}
-
-function callback(err, msg) {
+function handleWaremaMessage(err, msg) {
     if (err) {
         log.error(err);
     }
@@ -244,10 +45,10 @@ function callback(err, msg) {
                     forceDevices.forEach(deviceString => {
                         const [snr, type] = deviceString.split(':');
 
-                        registerDevice({snr: snr, type: type || "25"})
+                        registerDevice({snr: snr, type: type || "25"}, client, devices, ignoredDevices, stickUsb)
                     })
                 } else {
-                    msg.payload.devices.forEach(element => registerDevice(element))
+                    msg.payload.devices.forEach(element => registerDevice(element, client, devices, ignoredDevices, stickUsb))
                 }
                 log.debug('Registered devices:\n' + JSON.stringify(stickUsb.vnBlindsList(), null, 2))
                 break;
@@ -255,7 +56,7 @@ function callback(err, msg) {
                 log.silly('Weather broadcast:\n' + JSON.stringify(msg.payload, null, 2))
 
                 if (!devices[msg.payload.weather.snr]) {
-                    registerDevice({snr: msg.payload.weather.snr, type: "63"});
+                    registerDevice({snr: msg.payload.weather.snr, type: "63"}, client, devices, ignoredDevices, stickUsb);
                 }
 
                 client.publish('warema/' + msg.payload.weather.snr + '/illuminance/state', msg.payload.weather.lumen.toString(), {retain: true})
@@ -310,8 +111,9 @@ const stickUsb = new warema(settingsPar.wmsSerialPort,
     settingsPar.wmsPanid,
     settingsPar.wmsKey,
     {},
-    callback
+    handleWaremaMessage
 );
+
 
 //Do not attempt connecting to MQTT if trying to discover network parameters
 if (settingsPar.wmsPanid === 'FFFF') return;
@@ -328,7 +130,8 @@ const client = mqtt.connect(mqttServer,
             retain: true
         }
     }
-)
+);
+
 
 client.on('connect', function () {
     log.info('Connected to MQTT')
@@ -361,19 +164,13 @@ client.on('message', function (topic, message) {
                     //TODO: use stick to turn on/off
                     break;
                 case 'CLOSE':
+                case 'CLOSETILT':
 					stickUsb.vnBlindSetPosition(device, 100, 0);
                     client.publish('warema/' + device + '/state', 'closing');
                     break;
-				case 'CLOSETILT':
-					stickUsb.vnBlindSetPosition(device, 0, 100);
-                    client.publish('warema/' + device + '/state', 'closing');
-                    break;
+
                 case 'OPEN':
-                    log.debug('Opening ' + device);
-                    stickUsb.vnBlindSetPosition(device, 0, 0);
-                    client.publish('warema/' + device + '/state', 'opening');
-                    break;
-				case 'OPENTILT':
+                case 'OPENTILT':
                     log.debug('Opening ' + device);
                     stickUsb.vnBlindSetPosition(device, 0, 0);
                     client.publish('warema/' + device + '/state', 'opening');
@@ -385,8 +182,6 @@ client.on('message', function (topic, message) {
             }
             break;
         case 'set_position':
-			//log.debug('Setting ' + device + ' to ' + message + '%, angle ' + devices[device].angle);
-            //stickUsb.vnBlindSetPosition(device, parseInt(message), parseInt(devices[device]['angle']))
 			log.debug('Setting ' + device + ' to ' + message);
             stickUsb.vnBlindSetPosition(device, parseInt(message))
             break;
