@@ -185,7 +185,7 @@ function privateOnWmsMsgRcv(stickObj, wmsMsg) {
                 payload: {weather: stickObj.weather, wmsMsg: wmsMsg}
             });
         } else if (wmsMsg.msgType === "scanResponse") {
-            log.info(stickObj.name + " Scanned device: " + wmsMsg.snr + " Type " + wmsMsg.params.deviceType + " " + wmsMsg.params.deviceTypeStr);
+            log.debug(stickObj.name + " Scanned device: " + wmsMsg.snr + " Type " + wmsMsg.params.deviceType + " " + wmsMsg.params.deviceTypeStr);
             privateUpdateWmsComStatistics(stickObj, 0/*snr*/, "wmsRecieved");
 
             device = privateGetScannedDevBySnrHex(stickObj, wmsMsg.snr);
