@@ -1,0 +1,25 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "restore",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: install",
+			"detail": "install dependencies from package"
+		},
+		{
+			"type": "shell",
+			"label": "deploy (code only)",
+			"group": "build",
+			"command": "scp -r ./warema-bridge/* pi@waremapi:/opt/wms2mqtt/warema-bridge/",
+		},
+		{
+			"type": "shell",
+			"label": "deploy (all)",
+			"group": "build",
+			"command": "scp -r ./* pi@waremapi:/opt/wms2mqtt/",
+		}
+	]
+}
